@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
-import {
-  Form,
-  InputNumber,
-  Select,
-  Button,
-  Card,
-  Typography,
-  Divider,
-} from 'antd';
+import { Form, DatePicker, Select, Button, Card, Typography, Divider } from 'antd';
 import { calculateRetirement } from './utils';
+import moment from 'moment';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -18,19 +11,14 @@ function RetirementCalculator() {
   const [result, setResult] = useState(null);
 
   const onFinish = (values) => {
-    const info = calculateRetirement(
-      values.yearOfBirth,
-      values.monthOfBirth,
-      values.type
-    );
+    const birthDate = values.birthDate.toDate();
+    const info = calculateRetirement(birthDate.getFullYear(), birthDate.getMonth() + 1, values.type);
     setResult(info);
   };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <Title level={2} className="text-center mb-6">
-        退休计算器
-      </Title>
+      <Title level={2} className="text-center mb-6">退休计算器</Title>
       <Form
         form={form}
         name="retirement_calculator"
@@ -38,19 +26,16 @@ function RetirementCalculator() {
         layout="vertical"
       >
         <Form.Item
-          name="yearOfBirth"
-          label="出生年份"
-          rules={[{ required: true, message: '请输入出生年份！' }]}
+          name="birthDate"
+          label="出生日期"
+          rules={[{ required: true, message: '请选择出生日期！' }]}
         >
-          <InputNumber className="w-full" min={1900} max={2023} />
-        </Form.Item>
-
-        <Form.Item
-          name="monthOfBirth"
-          label="出生月份"
-          rules={[{ required: true, message: '请输入出生月份！' }]}
-        >
-          <InputNumber className="w-full" min={1} max={12} />
+          <DatePicker 
+            picker="month" 
+            className="w-full"
+            placeholder="选择出生年月"
+            disabledDate={(current) => current && current > moment().endOf('day')}
+          />
         </Form.Item>
 
         <Form.Item
@@ -58,7 +43,7 @@ function RetirementCalculator() {
           label="类型"
           rules={[{ required: true, message: '请选择类型！' }]}
         >
-          <Select>
+          <Select placeholder="选择退休类型">
             <Option value="male">男性</Option>
             <Option value="female50">女性（50岁退休）</Option>
             <Option value="female55">女性（55岁退休）</Option>
@@ -75,18 +60,10 @@ function RetirementCalculator() {
       {result && (
         <>
           <Divider />
-          <Title level={3} className="mb-4">
-            计算结果
-          </Title>
-          <Text strong className="block mb-2">
-            退休年龄: {result.retirementAge}
-          </Text>
-          <Text strong className="block mb-2">
-            退休时间: {result.retirementTime}
-          </Text>
-          <Text strong className="block">
-            延迟退休: {result.delayMonths}
-          </Text>
+          <Title level={3} className="mb-4">计算结果</Title>
+          <Text strong className="block mb-2">退休年龄: {result.retirementAge}</Text>
+          <Text strong className="block mb-2">退休时间: {result.retirementTime}</Text>
+          <Text strong className="block">延迟退休: {result.delayMonths}</Text>
         </>
       )}
     </Card>
