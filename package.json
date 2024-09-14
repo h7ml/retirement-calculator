@@ -27,10 +27,13 @@
     "antd": "^5.20.6",
     "autoprefixer": "^10.4.20",
     "dayjs": "^1.11.13",
+    "i18next": "^23.15.1",
     "postcss": "^8.4.45",
     "prettier": "^3.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.1",
+    "recharts": "^2.12.7",
     "tailwindcss": "^3.4.11"
   },
   "devDependencies": {
@@ -38,6 +41,7 @@
     "@eslint/js": "^9.10.0",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "@vercel/node": "^2.15.3",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^9.10.0",
     "eslint-plugin-react": "^7.36.1",

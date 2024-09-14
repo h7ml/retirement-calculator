@@ -1,21 +1,14 @@
-import { useState } from "react";
-import {
-  Form,
-  DatePicker,
-  Select,
-  Button,
-  Card,
-  Typography,
-  Divider,
-  ConfigProvider,
-} from "antd";
-import { RetirementCalculator } from "./utils";
+import React, { useState } from 'react';
+import { Form, DatePicker, Select, Button, Card, Typography, Divider, ConfigProvider, Switch } from 'antd';
+import { RetirementCalculator } from './utils';
+import { useStore, addCalculation } from './store';
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
-import locale from "antd/locale/zh_CN";
-
-// 设置 dayjs 语言
-dayjs.locale("zh-cn");
+import "dayjs/locale/en";
+import zhCN from "antd/es/locale/zh_CN";
+import enUS from "antd/es/locale/en_US";
+import { useTranslation } from 'react-i18next';
+import './i18n';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -23,24 +16,43 @@ const { Option } = Select;
 function Index() {
   const [form] = Form.useForm();
   const [result, setResult] = useState(null);
+  const { t, i18n } = useTranslation();
+  const [locale, setLocale] = useState(i18n.language === 'en' ? enUS : zhCN);
+  const { dispatch } = useStore();
 
   const onFinish = (values) => {
-    const birthDate = values.birthDate.toDate();
+    const birthDate = values.birthDate.format('YYYY-MM-DD');
     const calculator = new RetirementCalculator(
-      birthDate.getFullYear(),
-      birthDate.getMonth() + 1,
-      values.type,
+      values.birthDate.year(),
+      values.birthDate.month() + 1,
+      values.type
     );
     const info = calculator.calculate();
     setResult(info);
+    dispatch(addCalculation({ ...info, birthDate, type: values.type }));
+  };
+
+  const changeLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'zh' : 'en';
+    i18n.changeLanguage(newLang);
+    setLocale(newLang === 'en' ? enUS : zhCN);
+    dayjs.locale(newLang === 'en' ? 'en' : 'zh-cn');
   };
 
   return (
     <ConfigProvider locale={locale}>
       <Card className="w-full max-w-2xl mx-auto">
-        <Title level={2} className="text-center mb-6">
-          退休计算器
-        </Title>
+        <div className="flex justify-between items-center mb-6">
+          <Title level={2} className="m-0">
+            {t("retirementCalculator")}
+          </Title>
+          <Switch
+            checkedChildren="EN"
+            unCheckedChildren="中"
+            checked={i18n.language === 'en'}
+            onChange={changeLanguage}
+          />
+        </div>
         <Form
           form={form}
           name="retirement_calculator"
@@ -49,34 +61,32 @@ function Index() {
         >
           <Form.Item
             name="birthDate"
-            label="出生日期"
-            rules={[{ required: true, message: "请选择出生日期！" }]}
+            label={t("birthDate")}
+            rules={[{ required: true, message: t("pleaseSelectBirthDate") }]}
           >
             <DatePicker
-              picker="month"
               className="w-full"
-              placeholder="选择出生年月"
-              disabledDate={(current) =>
-                current && current > dayjs().endOf("day")
-              }
+              format="YYYY年MM月DD日"
+              placeholder={t("selectDate")}
+              disabledDate={(current) => current && current > dayjs().endOf("day")}
             />
           </Form.Item>
 
           <Form.Item
             name="type"
-            label="类型"
-            rules={[{ required: true, message: "请选择类型！" }]}
+            label={t("employmentType")}
+            rules={[{ required: true, message: t("pleaseSelectType") }]}
           >
-            <Select placeholder="选择退休类型">
-              <Option value="male">男性</Option>
-              <Option value="female50">女性（50岁退休）</Option>
-              <Option value="female55">女性（55岁退休）</Option>
+            <Select placeholder={t("selectRetirementType")}>
+              <Option value="male">{t("male")}</Option>
+              <Option value="female50">{t("female50")}</Option>
+              <Option value="female55">{t("female55")}</Option>
             </Select>
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" className="w-full">
-              计算
+              {t("calculateButton")}
             </Button>
           </Form.Item>
         </Form>
@@ -85,16 +95,16 @@ function Index() {
           <>
             <Divider />
             <Title level={3} className="mb-4">
-              计算结果
+              {t("calculationResult")}
             </Title>
             <Text strong className="block mb-2">
-              退休年龄: {result.retirementAge}
+              {t("retirementAge")}: {result.retirementAge}
             </Text>
             <Text strong className="block mb-2">
-              退休时间: {result.retirementTime}
+              {t("retirementTime")}: {result.retirementTime}
             </Text>
             <Text strong className="block">
-              延迟退休: {result.delayMonths}
+              {t("delayMonths")}: {result.delayMonths}
             </Text>
           </>
         )}
